@@ -3,7 +3,6 @@
 //
 'use strict';
 
-
 process.title = 'letschat';
 
 require('colors');
