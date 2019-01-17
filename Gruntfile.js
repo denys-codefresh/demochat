@@ -2,7 +2,7 @@
 // Gruntfile
 //
 
-'use strict';
+'use strict';;
 
 module.exports = function(grunt) {
     grunt.initConfig({
