@@ -1,0 +1,63 @@
+version: '1.0'
+steps:
+ BuildImage:
+   title: Building Docker Image
+   type: build
+   image_name: codefresh/demochat
+   working_directory: ./
+   dockerfile: Dockerfile
+   tag: '${{CF_SHORT_REVISION}}'
+  
+     
+ Show_varsss:
+   image: alpine
+   title: 'show vars'
+   commands:
+     - printenv
+   when:
+     branch:
+       only:
+         - master
+ 
+ AddCustomReport:
+   title: 'add custom report'
+   image: '${{BuildImage}}'
+   working_directory: /codefresh/volume/
+   # for demonstration of upload multiple reports create some test results
+   commands:
+     - rm -rf testDir
+     - mkdir testDir && cd ./testDir
+     - echo 'Test report uploaded' > index.html
+
+ RunningUnitTests:
+   title: Running Unit Tests
+   fail_fast: false
+   image: '${{BuildImage}}'
+   working_directory: IMAGE_WORK_DIR
+   entry_point:
+     - /bin/sh
+     - /codefresh/volume/cf-generated/unit_test_script
+   create_file:
+     path: /codefresh/volume/cf-generated
+     name: unit_test_script
+     content: npm test && cp -r -f ./mochawesome-report /codefresh/volume/
+
+ unit_test_reporting_step:
+   title: "Generate test reporting"
+   image: codefresh/cf-docker-test-reporting:latest
+   working_directory: /codefresh/volume/
+   environment:
+   
+     - REPORT_DIR=mochawesome-report
+     - REPORT_INDEX_FILE=mochawesome.html
+   
+     #- REPORT_DIR.0=testDir
+     #- REPORT_INDEX_FILE.0=index.html
+     #- REPORT_TYPE.0=naher
+     #- ALLURE_DIR.1=allure-results
+     #- REPORT_TYPE.1=allure
+     #- REPORT_DIR.2=testDir
+     #- REPORT_INDEX_FILE.2=index.html
+     #- REPORT_TYPE.2=cucumber
+     - BUCKET_NAME=test777774444/one/two
+     - CF_STORAGE_INTEGRATION=json
